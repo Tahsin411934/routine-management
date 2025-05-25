@@ -37,6 +37,30 @@ class RoutineController extends Controller
             'teachers'
         ));
     }
+    public function manage_routine(Request $request)
+    {
+        $sessions = Session::all();
+        $semesters = Semester::all();
+        $teachers = User::where('role', 'teacher')->orderBy('priority', 'desc')->get();
+
+        $latestSession = Session::latest()->first();
+        $selectedSession = $request->get('session', $latestSession->id);
+
+        $routines = Routine::where('session', $selectedSession)
+            ->with(['routineSections', 'routineSections.routineTeachers.teacher'])
+            ->get()
+            ->groupBy(function ($routine) {
+                return Carbon::parse($routine->date)->format('Y-m-d');
+            });
+
+        return view('panel.pages.manage_routine', compact(
+            'routines',
+            'sessions',
+            'selectedSession',
+            'semesters',
+            'teachers'
+        ));
+    }
 
     public function store(Request $request)
     {

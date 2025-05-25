@@ -8,37 +8,53 @@
                     Dashboard
                 </a>
                 @if (Auth::user()->role == 'admin')
-                    <a class="nav-link {{ Request::is('admin/session') ? 'active' : '' }}" href="/admin/session">
-                        <div class="sb-nav-link-icon"><i class="fa-regular fa-rectangle-list"
-                                style="color: #2358b3;"></i></div>
-                        Session
-                    </a>
-                    <a class="nav-link {{ Request::is('admin/semester') ? 'active' : '' }}" href="/admin/semester">
-                        <div class="sb-nav-link-icon"><i class="fa-solid fa-list" style="color: #2358b3;"></i></div>
-                        Semester
-                    </a>
-                    <a class="nav-link {{ Request::is('admin/teachers') ? 'active' : '' }}" href="/admin/teachers">
-                        <div class="sb-nav-link-icon"><i class="fa-solid fa-users" style="color: #2358b3;"></i></i>
-                        </div>
-                        Teachers
-                    </a>
-                    <a class="nav-link {{ Request::is('admin/offer-list') ? 'active' : '' }}" href="/admin/offer-list">
-                        <div class="sb-nav-link-icon"><i class="fa-solid fa-table-list" style="color: #2358b3;"></i>
-                        </div>
-                        Offer List
-                    </a>
-                    <a class="nav-link {{ Request::is('/admin/routines') ? 'active' : '' }}" href="/admin/routines">
-                        <div class="sb-nav-link-icon"><i class="fa-solid fa-table-list" style="color: #2358b3;"></i>
-                        </div>
-                       Routine
-                    </a>
+                <a class="nav-link {{ Request::is('admin/session') ? 'active' : '' }}" href="/admin/session">
+                    <div class="sb-nav-link-icon"><i class="fa-regular fa-rectangle-list" style="color: #2358b3;"></i>
+                    </div>
+                    Session
+                </a>
+                <a class="nav-link {{ Request::is('admin/semester') ? 'active' : '' }}" href="/admin/semester">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-list" style="color: #2358b3;"></i></div>
+                    Semester
+                </a>
+                <a class="nav-link {{ Request::is('admin/teachers') ? 'active' : '' }}" href="/admin/teachers">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-users" style="color: #2358b3;"></i></i>
+                    </div>
+                    Teachers
+                </a>
+                <a class="nav-link {{ Request::is('admin/offer-list') ? 'active' : '' }}" href="/admin/offer-list">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-table-list" style="color: #2358b3;"></i>
+                    </div>
+                    Offer List
+                </a>
+                <a class="nav-link collapsed {{ Request::is('admin/routines*') ? 'active' : '' }}" href="#"
+                    data-bs-toggle="collapse" data-bs-target="#collapseRoutine" aria-expanded="false"
+                    aria-controls="collapseRoutine">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-table-list" style="color: #2358b3;"></i></div>
+                    Routine
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse {{ Request::is('admin/routines*') ? 'show' : '' }}" id="collapseRoutine"
+                    data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+                        <a class="nav-link {{ Request::is('admin/manage/routines') ? 'active' : '' }}"
+                            href="/admin/manage/routines">
+                            Management
+                        </a>
+                        <a class="nav-link {{ Request::is('admin/routines') ? 'active' : '' }}"
+                            href="/admin/routines">
+                            Show Routine
+                        </a>
+                    </nav>
+                </div>
+
                 @endif
                 @if (Auth::user()->role == 'teacher')
-                    <a class="nav-link {{ Request::is('teacher/offers') ? 'active' : '' }}" href="/teacher/offers">
-                        <div class="sb-nav-link-icon"><i class="fa-solid fa-table-list" style="color: #2358b3;"></i>
-                        </div>
-                        Offers
-                    </a>
+                <a class="nav-link {{ Request::is('teacher/offers') ? 'active' : '' }}" href="/teacher/offers">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-table-list" style="color: #2358b3;"></i>
+                    </div>
+                    Offers
+                </a>
                 @endif
                 <a class="nav-link {{ Request::is('profile') ? 'active' : '' }}" href="/profile">
                     <div class="sb-nav-link-icon"><i class="fa-solid fa-user" style="color: #2358b3;"></i></i></div>
@@ -49,9 +65,9 @@
         <div class="sb-sidenav-footer">
             <div class="small">Logged in as: <br><b class="text-white">
                     @if (Auth::user()->role == 'admin')
-                        <b>Website Admin</b>
+                    <b>Website Admin</b>
                     @else
-                        Teacher
+                    Teacher
                     @endif
                 </b></div>
             <b class="text-white">{{ Auth::user()->name }}</b>

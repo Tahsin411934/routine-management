@@ -29,4 +29,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/teacher-delete/{id}', [TeacherController::class, 'destroy']);
     //routine
     Route::resource('routines', RoutineController::class);
+    Route::get('/manage/routines', [RoutineController::class, 'manage_routine'])->name('routines.manage');
+
 });
