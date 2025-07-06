@@ -22,6 +22,7 @@ class TeacherController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'designation' => 'required',
+            'shortName' => 'nullable',
             'priority' => 'required|min:1',
             'password' => 'required|min:8',
             'confirm_password' => 'required|same:password',
@@ -31,6 +32,7 @@ class TeacherController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->designation = $request->designation;
+         $user->shortName  = $request->shortName;
         $user->priority = $request->priority;
         $user->password = Hash::make($request->password);
         $user->role = 'teacher';
@@ -45,6 +47,7 @@ class TeacherController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users,email,'.$id,
             'designation' => 'required',
+            'shortName' => 'nullable',
             'priority' => 'required|min:1',
             'password' => 'nullable|min:8',
             'confirm_password' => 'required_with:password|same:password',
@@ -54,6 +57,7 @@ class TeacherController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->designation = $request->designation;
+        $user->shortName  = $request->shortName;
         $user->priority = $request->priority;
         if ($request->confirm_password) {
             $user->password = Hash::make($request->confirm_password);

@@ -14,7 +14,7 @@
                         List Of Teacher
                     </div>
                     <div class="">
-                        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#create">Create
+                        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#create">Add
                             Teacher</button>
                     </div>
                     {{-- create modal start --}}
@@ -25,7 +25,7 @@
                                 <form action="{{ url('admin/teacher-store') }}" method="post">
                                     @csrf
                                     <div class="modal-header d-flex justify-content-between align-items-center">
-                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Create Teacher</h1>
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Add Teacher</h1>
                                     </div>
                                     <div class="modal-body">
                                         <div class="mb-3">
@@ -33,6 +33,12 @@
                                                     class="text-danger">*</span></label>
                                             <input type="text" class="form-control" name="name" required>
                                         </div>
+                                        <div class="mb-3">
+                                                        <label for="" class="form-label">Short Name <span
+                                                                class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" name="shortName"
+                                                           >
+                                                    </div>
                                         <div class="mb-3">
                                             <label for="" class="form-label">Email<span
                                                     class="text-danger">*</span></label>
@@ -81,6 +87,7 @@
                             <tr>
                                 <th>S/N</th>
                                 <th>Name</th>
+                                <th>Shor Name</th>
                                 <th>Email</th>
                                 <th>Designation</th>
                                 <th>Priority</th>
@@ -91,6 +98,7 @@
                             <tr>
                                 <th>S/N</th>
                                 <th>Name</th>
+                                <th>Shor Name</th>
                                 <th>Email</th>
                                 <th>Designation</th>
                                 <th>Priority</th>
@@ -102,6 +110,7 @@
                                 <tr>
                                     <td>{{ $count++ }}</td>
                                     <td>{{ $user->name }}</td>
+                                     <td>{{ $user->shortName }}</td>
                                     <td>{{ $user->email }}</td>
                                     <td>{{ $user->designation }}</td>
                                     <td>{{ $user->priority }}</td>
@@ -140,6 +149,13 @@
                                                                 class="text-danger">*</span></label>
                                                         <input type="text" class="form-control" name="designation"
                                                             required value="{{ $user->designation }}">
+                                                    </div>
+
+                                                     <div class="mb-3">
+                                                        <label for="" class="form-label">Short Name <span
+                                                                class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" name="shortName"
+                                                            required value="{{ $user->shortName }}">
                                                     </div>
                                                     <div class="mb-3">
                                                         <label for="" class="form-label">Prority<span

@@ -3,6 +3,13 @@
 @section('content')
 <main>
     <div class="container-fluid px-4">
+        @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+        
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-5">
                 <h1 class="mt-4">Routine Management: </h1>
@@ -34,7 +41,7 @@
             <div class="modal fade" id="create" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form action="{{ route('routines.store') }}" method="POST">
+                        <form action="{{ route('routines.store') }}" method="POST" id="createRoutineForm">
                             @csrf
                             <div class="modal-header">
                                 <h5 class="modal-title">Create Routine</h5>
@@ -127,6 +134,7 @@
                                                             </option>
                                                             @endforeach
                                                         </select>
+                                                        <div class="invalid-feedback">This teacher is already assigned to another section.</div>
                                                     </div>
                                                     <div class="col-2">
                                                         <button type="button"
@@ -155,7 +163,7 @@
             <div class="modal fade" id="edit{{ $routine->id }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form action="{{ route('routines.update', $routine->id) }}" method="POST">
+                        <form action="{{ route('routines.update', $routine->id) }}" method="POST" id="editRoutineForm{{ $routine->id }}">
                             @csrf
                             @method('PUT')
                             <div class="modal-header">
@@ -273,6 +281,7 @@
                                                             </option>
                                                             @endforeach
                                                         </select>
+                                                        <div class="invalid-feedback">This teacher is already assigned to another section.</div>
                                                     </div>
                                                     <div class="col-2">
                                                         <button type="button"
@@ -360,7 +369,7 @@
 
                                             @foreach ($section->routineTeachers as $routineTeacher)
                                             <span class="text-black">
-                                                {{ $routineTeacher->teacher->name }} ,
+                                                {{ $routineTeacher->teacher->name }}({{ $routineTeacher->teacher->shortName }}) ,
                                             </span>
                                             @endforeach
 
@@ -411,6 +420,22 @@
             .table-striped tbody tr:hover {
                 background-color: rgba(0, 0, 0, 0.04);
             }
+            
+            .is-invalid {
+                border-color: #dc3545 !important;
+            }
+
+            .invalid-feedback {
+                display: none;
+                width: 100%;
+                margin-top: 0.25rem;
+                font-size: 0.875em;
+                color: #dc3545;
+            }
+
+            .is-invalid ~ .invalid-feedback {
+                display: block;
+            }
             </style>
         </div>
     </div>
@@ -419,6 +444,27 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    // Function to check for duplicate teachers
+    function checkForDuplicateTeachers(container) {
+        const allTeacherSelects = container.querySelectorAll('select[name*="[teacher_id]"]');
+        const selectedValues = {};
+        let hasDuplicates = false;
+
+        allTeacherSelects.forEach(select => {
+            if (select.value && select.value !== '') {
+                if (selectedValues[select.value]) {
+                    hasDuplicates = true;
+                    select.classList.add('is-invalid');
+                } else {
+                    selectedValues[select.value] = true;
+                    select.classList.remove('is-invalid');
+                }
+            }
+        });
+
+        return hasDuplicates;
+    }
+
     // Add Section in Create Modal
     const addSectionBtn = document.getElementById('addSection');
     if (addSectionBtn) {
@@ -461,6 +507,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
                                     @endforeach
                                 </select>
+                                <div class="invalid-feedback">This teacher is already assigned to another section.</div>
                             </div>
                             <div class="col-2">
                                 <button type="button" class="btn btn-sm btn-danger remove-teacher" disabled>
@@ -473,6 +520,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
             sectionsContainer.appendChild(sectionGroup);
             updateRemoveButtons();
+            
+            // Add change event to new teacher selects
+            sectionGroup.querySelectorAll('select[name*="[teacher_id]"]').forEach(select => {
+                select.addEventListener('change', function() {
+                    checkForDuplicateTeachers(document.getElementById('create'));
+                });
+            });
         });
     }
 
@@ -485,6 +539,12 @@ document.addEventListener("DOMContentLoaded", function() {
             const teachersContainer = btn.closest('.teachers-container').querySelector('.teacher-rows');
             const teacherIndex = teachersContainer.querySelectorAll('.row').length;
 
+            // Check for duplicates before adding
+            if (checkForDuplicateTeachers(document.getElementById('create'))) {
+                alert('This teacher is already assigned to another section in this routine.');
+                return;
+            }
+
             const teacherRow = document.createElement('div');
             teacherRow.classList.add('row', 'g-2', 'mb-3', 'align-items-end');
             teacherRow.innerHTML = `
@@ -496,6 +556,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
                         @endforeach
                     </select>
+                    <div class="invalid-feedback">This teacher is already assigned to another section.</div>
                 </div>
                 <div class="col-2">
                     <button type="button" class="btn btn-sm btn-danger remove-teacher">
@@ -505,6 +566,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
             teachersContainer.appendChild(teacherRow);
             updateRemoveButtons();
+            
+            // Add change event to new teacher select
+            teacherRow.querySelector('select').addEventListener('change', function() {
+                checkForDuplicateTeachers(document.getElementById('create'));
+            });
         }
     });
 
@@ -513,24 +579,24 @@ document.addEventListener("DOMContentLoaded", function() {
         // Remove section
         if (e.target.classList.contains('remove-section') ||
             (e.target.parentElement && e.target.parentElement.classList.contains('remove-section'))) {
-            const btn = e.target.classList.contains('remove-section') ? e.target : e.target
-                .parentElement;
+            const btn = e.target.classList.contains('remove-section') ? e.target : e.target.parentElement;
             const sectionGroup = btn.closest('.section-group');
             if (sectionGroup) {
                 sectionGroup.remove();
                 updateRemoveButtons();
+                checkForDuplicateTeachers(document.getElementById('create'));
             }
         }
 
         // Remove teacher
         if (e.target.classList.contains('remove-teacher') ||
             (e.target.parentElement && e.target.parentElement.classList.contains('remove-teacher'))) {
-            const btn = e.target.classList.contains('remove-teacher') ? e.target : e.target
-                .parentElement;
+            const btn = e.target.classList.contains('remove-teacher') ? e.target : e.target.parentElement;
             const teacherRow = btn.closest('.row');
             if (teacherRow) {
                 teacherRow.remove();
                 updateRemoveButtons();
+                checkForDuplicateTeachers(document.getElementById('create'));
             }
         }
     });
@@ -555,6 +621,14 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         });
     }
+
+    // Form submission validation for create modal
+    document.getElementById('createRoutineForm')?.addEventListener('submit', function(e) {
+        if (checkForDuplicateTeachers(document.getElementById('create'))) {
+            e.preventDefault();
+            alert('Please fix duplicate teacher assignments before submitting.');
+        }
+    });
 });
 
 // Edit Modal Functions
@@ -597,6 +671,7 @@ function addEditSection(routineId) {
                             <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
                             @endforeach
                         </select>
+                        <div class="invalid-feedback">This teacher is already assigned to another section.</div>
                     </div>
                     <div class="col-2">
                         <button type="button" class="btn btn-sm btn-danger remove-teacher" disabled>
@@ -609,12 +684,25 @@ function addEditSection(routineId) {
 
     container.appendChild(sectionGroup);
     updateEditRemoveButtons(routineId);
+    
+    // Add change event to new teacher selects
+    sectionGroup.querySelectorAll('select[name*="[teacher_id]"]').forEach(select => {
+        select.addEventListener('change', function() {
+            checkForDuplicateTeachers(document.getElementById(`edit${routineId}`));
+        });
+    });
 }
 
 function addEditTeacherToSection(routineId, sectionIndex) {
     const container = document.querySelector(
         `#edit-sections-${routineId} .teachers-container[data-section-index="${sectionIndex}"] .teacher-rows`);
     const teacherIndex = container.querySelectorAll('.row').length;
+
+    // Check for duplicates before adding
+    if (checkForDuplicateTeachers(document.getElementById(`edit${routineId}`))) {
+        alert('This teacher is already assigned to another section in this routine.');
+        return;
+    }
 
     const teacherRow = document.createElement('div');
     teacherRow.classList.add('row', 'g-2', 'mb-3', 'align-items-end');
@@ -627,6 +715,7 @@ function addEditTeacherToSection(routineId, sectionIndex) {
                 <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
                 @endforeach
             </select>
+            <div class="invalid-feedback">This teacher is already assigned to another section.</div>
         </div>
         <div class="col-2">
             <button type="button" class="btn btn-sm btn-danger remove-teacher">
@@ -636,6 +725,11 @@ function addEditTeacherToSection(routineId, sectionIndex) {
 
     container.appendChild(teacherRow);
     updateEditRemoveButtons(routineId);
+    
+    // Add change event to new teacher select
+    teacherRow.querySelector('select').addEventListener('change', function() {
+        checkForDuplicateTeachers(document.getElementById(`edit${routineId}`));
+    });
 }
 
 function updateEditRemoveButtons(routineId) {
@@ -673,6 +767,7 @@ document.addEventListener('click', function(e) {
             const routineId = modal.id.replace('edit', '');
             sectionGroup.remove();
             updateEditRemoveButtons(routineId);
+            checkForDuplicateTeachers(modal);
         }
     }
 
@@ -686,6 +781,7 @@ document.addEventListener('click', function(e) {
             const routineId = modal.id.replace('edit', '');
             teacherRow.remove();
             updateEditRemoveButtons(routineId);
+            checkForDuplicateTeachers(modal);
         }
     }
 
@@ -698,5 +794,24 @@ document.addEventListener('click', function(e) {
         const routineId = modal.id.replace('edit', '');
         addEditTeacherToSection(routineId, sectionIndex);
     }
+});
+
+// Add change event listeners to existing teacher selects in edit modals
+document.querySelectorAll('.modal[id^="edit"] select[name*="[teacher_id]"]').forEach(select => {
+    select.addEventListener('change', function() {
+        const modal = this.closest('.modal');
+        checkForDuplicateTeachers(modal);
+    });
+});
+
+// Form submission validation for edit modals
+document.querySelectorAll('form[id^="editRoutineForm"]').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const modal = this.closest('.modal');
+        if (checkForDuplicateTeachers(modal)) {
+            e.preventDefault();
+            alert('Please fix duplicate teacher assignments before submitting.');
+        }
+    });
 });
 </script>

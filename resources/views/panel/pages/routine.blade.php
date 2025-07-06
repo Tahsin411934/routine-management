@@ -6,7 +6,7 @@
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
                 <h1 class="mt-4">Routine For: </h1>
-                <form method="GET" action="{{ route('routines.index') }}">
+                <form method="GET" action="{{ route('routines.index') }}" class="d-flex align-items-center gap-3">
                     <div class="mt-4">
                         <select name="session" id="session" class="form-select" onchange="this.form.submit()">
                             <option value="">-- Select Session --</option>
@@ -18,6 +18,13 @@
                         </select>
                     </div>
                 </form>
+            </div>
+            
+            <div class="mt-4">
+                <div class="input-group">
+                    <input type="text" id="teacherSearch" class="form-control" placeholder="Search by teacher short name">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch">Clear</button>
+                </div>
             </div>
         </div>
 
@@ -35,7 +42,7 @@
                             <th class="border border-dark" style="min-width: 250px">Assign Teacher/s</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="routineTableBody">
                         @php $count = 1; @endphp
                         @foreach ($routines as $date => $dayRoutines)
                         @php $rowCount = count($dayRoutines); @endphp
@@ -71,7 +78,7 @@
                             {{-- Section-Room --}}
                             <td class="align-middle border border-dark">
                                 @foreach ($routine->routineSections as $section)
-                                    <span class="badge bg-primary text-white mb-1 ">
+                                    <span class="badge bg-primary text-white mb-1">
                                         {{ $section->section }} - {{ $section->room }}
                                     </span>
                                 @endforeach
@@ -84,14 +91,12 @@
                                         <span class="mb-1">
                                             {{ $section->room }} -->
                                         </span>
-                                     
-                                            @foreach ($section->routineTeachers as $routineTeacher)
-                                                <span class="text-black">
-                                                    {{ $routineTeacher->teacher->name }}
-                                                    @if(!$loop->last), @endif
-                                                </span>
-                                            @endforeach
-                                      
+                                        @foreach ($section->routineTeachers as $routineTeacher)
+                                            <span class="teacher-name" data-shortname="{{ strtolower($routineTeacher->teacher->shortName) }}">
+                                                {{ $routineTeacher->teacher->name }}({{ $routineTeacher->teacher->shortName }})
+                                                @if(!$loop->last), @endif
+                                            </span>
+                                        @endforeach
                                     </div>
                                 @endforeach
                             </td>
@@ -104,4 +109,39 @@
         </div>
     </div>
 </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('teacherSearch');
+    const clearButton = document.getElementById('clearSearch');
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const teacherNames = document.querySelectorAll('.teacher-name');
+        
+        teacherNames.forEach(teacher => {
+            const shortName = teacher.getAttribute('data-shortname');
+            if (searchTerm === '' || !shortName.includes(searchTerm)) {
+                teacher.classList.remove('bg-primary', 'text-white', 'fw-bold');
+            } else {
+                teacher.classList.add('bg-primary', 'text-white', 'fw-bold');
+            }
+        });
+    });
+    
+    clearButton.addEventListener('click', function() {
+        searchInput.value = '';
+        const teacherNames = document.querySelectorAll('.teacher-name');
+        teacherNames.forEach(teacher => {
+            teacher.classList.remove('bg-primary', 'text-white', 'fw-bold');
+        });
+    });
+});
+</script>
+
+<style>
+.teacher-name {
+    transition: all 0.3s ease;
+}
+</style>
 @endsection
